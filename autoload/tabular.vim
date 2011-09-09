@@ -151,6 +151,14 @@ if !exists("g:tabular_default_format")
   let g:tabular_default_format = "l1"
 endif
 
+if !exists("g:tabular_empty_lines")
+  let g:tabular_empty_lines = 0
+endif
+
+if !exists("g:tabular_single_comments")
+  let g:tabular_single_comments = 0
+endif
+
 let s:formatelempat = '\%([lrc]\d\+\)'
 
 function! tabular#ElementFormatPattern()
@@ -250,13 +258,16 @@ function! tabular#PipeRange(includepat, ...) range
   let bot = a:lastline
 
   if a:includepat != '' && top == bot
-    if top < 0 || top > line('$') || getline(top) !~ a:includepat
+    if top < 0 || top > line('$') ||
+		  \ (!g:tabular_empty_lines && getline(top) !~ a:includepat)
       return
     endif
-    while top > 1 && getline(top-1) =~ a:includepat
+    while top > 1 && (getline(top-1) =~ a:includepat || 
+		  \ g:tabular_empty_lines && getline(top-1) =~ '^\s*$' )
       let top -= 1
     endwhile
-    while bot < line('$') && getline(bot+1) =~ a:includepat
+    while bot < line('$') && (getline(bot+1) =~ a:includepat ||
+		  \ g:tabular_empty_lines && getline(bot+1) =~ '^\s*$' )
       let bot += 1
     endwhile
   endif
